@@ -1,5 +1,4 @@
 import { useState, useContext } from 'react'
-import { WORK_ON_PROGRESS } from '../constants'
 import { client } from '../libs/axios'
 import { TodoContext } from '../provider/TodoProvider'
 
@@ -14,12 +13,13 @@ export const InputForm = () => {
 
   const addTodo = async () => {
     const todo = {
-      name: todoName,
-      status: WORK_ON_PROGRESS,
+      contents: todoName,
+      status: "false",
     }
     const body = new URLSearchParams(todo)
-    await client.post('add-todo', body)
-    client.get('fetch-todos').then(({ data }) => {
+    await client.post('todo', body)
+    client.get('todo').then(({ data }) => {
+      console.log(data)
       setTodos(data)
     })
   }

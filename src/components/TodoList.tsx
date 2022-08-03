@@ -3,9 +3,9 @@ import { client } from '../libs/axios'
 import { TodoContext } from '../provider/TodoProvider'
 
 const omitText = (text: string): string => {
-  if (text.length > 10) {
-    return text.substring(0, 7) + '...'
-  }
+  // if (text.length > 10) {
+  //   return text.substring(0, 7) + '...'
+  // }
   return text
 }
 
@@ -13,27 +13,36 @@ export const TodoList = () => {
   const { todos, setTodos } = useContext(TodoContext)
 
   useEffect(() => {
-    client.get('fetch-todos').then(({ data }) => {
+    client.get('todo').then(({ data }) => {
       setTodos(data)
     })
   }, [])
 
-  const changeTodo = async (id: string, status: string) => {
-    const body = new URLSearchParams({
-      id,status
+  const handleCheked = (id:number, cheked:boolean) => {
+    const newTodos = todos.map((todo) => {
+      if (todo.id === id){
+        todo.status = !cheked
+        console.log(cheked)
+
+        changeTodo(todo.id.toString(),todo.content,todo.status.toString())
+      }
     })
-    await client.post('change-todo', body)
-    client.get('fetch-todos').then(({ data }) => {
+  }
+
+  const changeTodo = async (id: string, content: string, status: string) => {
+    console.log(status)
+    const body = new URLSearchParams({
+      id,content,status
+    })
+    await client.put(`todo/${id}`, body)
+    client.get('todo').then(({ data }) => {
       setTodos(data)
     })
   }
 
   const deleteTodo = async (id: string) => {
-    const body = new URLSearchParams({
-      id,
-    })
-    await client.post('delete-todo', body)
-    client.get('fetch-todos').then(({ data }) => {
+    await client.delete(`todo/${id}`)
+    client.get('todo').then(({ data }) => {
       setTodos(data)
     })
   }
@@ -53,26 +62,27 @@ export const TodoList = () => {
         </thead>
         <tbody>
           {todos.map((todo, index) => {
+            console.log(todo)
             return (
               <tr key={index}>
-                <td className="p-1">{index + 1}</td>
-                <td className="p-1">{omitText(todo.name)}</td>
-                <td className="p-1">{todo.status}</td>
+                <td className="p-1">{todo.id}</td>
+                <td className="p-1"><input type="text" disabled={todo.status} value={omitText(todo.content)}></input></td>
+                <td><input type="checkbox" checked={todo.status} readOnly onChange={(e)=>handleCheked(todo.id,todo.status)}/>完了</td>
                 <td className="p-1">
                   <button
                     className="px-2 h-7 border border-white rounded bg-teal-400 shadow-md text-white"
                     onClick={() => {
-                      changeTodo(todo.id, todo.status)
+                      changeTodo(todo.id.toString(), todo.content,todo.status.toString())
                     }}
                   >
-                    変更する
+                    保存
                   </button>
                 </td>
                 <td className="p-1">
                   <button
                     className="px-2 h-7 border border-white rounded bg-teal-400 shadow-md text-white"
                     onClick={() => {
-                      deleteTodo(todo.id)
+                      deleteTodo(todo.id.toString())
                     }}
                   >
                     削除する
