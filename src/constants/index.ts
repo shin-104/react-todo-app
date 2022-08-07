@@ -1,1 +1,3 @@
-export const DONE = '完了'
+export namespace SystemConst{
+    export const DONE = '完了'
+}
